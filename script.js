@@ -154,7 +154,7 @@ function naarStap(n) {
   if (n === 3) berekenRes();
   if (n === 4) berekenZon();
   if (n === 0) renderNieuws();
-  window.scrollTo({top: 0, behavior: 'smooth'});
+  window.scrollTo(0, 0);
   // Nav knoppen highlight
   var nkMap = {0:'nk0',1:'nk1',2:'nk1',3:'nk1',4:'nk4',5:'nk5',6:'nk6'};
   ['nk0','nk1','nk4','nk5','nk6'].forEach(function(id){

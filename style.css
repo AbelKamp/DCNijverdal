@@ -11,7 +11,7 @@
   --bl:#3a8fc7;--bl2:#6ab4e0;--bl3:#e3f2fd;
   --bg:#f4f9f0;--t1:#1a2e1a;--t2:#3d5a3d;--t3:#6a8a6a;--sh:rgba(30,82,32,.11);
 }
-*{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+*{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;overflow-x:hidden;}
 body{font-family:var(--font-sans);background:var(--bg);color:var(--t1);overflow-x:hidden;}
  
 /* NAV */
@@ -89,7 +89,7 @@ nav.vast{background:rgba(255,255,255,.97);box-shadow:0 2px 18px var(--sh);}
 .sd-k:hover{box-shadow:0 8px 22px var(--sh);transform:translateY(-3px);}
 .sd-k-bl{border-top-color:var(--bl);}
 .sd-icon{font-size:1.8rem;margin-bottom:.7rem;}
-.sd-titel{font-family:var(--font-serif);font-size:1rem;font-weight:700;color:var(--g1);margin-bottom:.4rem;}
+.sd-titel{font-family:var(--font-sans);font-size:1rem;font-weight:700;color:var(--g1);margin-bottom:.4rem;}
 .sd-tekst{font-size:.79rem;color:var(--t2);line-height:1.55;}
 .sd-pijl{font-size:.78rem;color:var(--g3);font-weight:700;margin-top:.55rem;}
 /* Nieuws op startpagina */
@@ -97,7 +97,7 @@ nav.vast{background:rgba(255,255,255,.97);box-shadow:0 2px 18px var(--sh);}
 .start-sec-titel em{color:var(--g3);font-style:normal;font-weight:800;}
 .start-nieuws{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:.95rem;margin-bottom:3rem;}
 /* Contact op startpagina */
-.start-contact{background:var(--g1);border-radius:18px;padding:2.5rem;color:white;margin-bottom:3rem;display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start;}
+.start-contact{background:var(--g1);border-radius:18px;padding:2.5rem;color:white;margin-bottom:3rem;display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start;overflow:hidden;}
 .sc-l h3{font-family:var(--font-serif);font-size:1.4rem;margin-bottom:.5rem;}
 .sc-l h3 em{color:#a8e06a;font-style:normal;font-weight:900;}
 .sc-l p{font-size:.85rem;opacity:.75;line-height:1.7;margin-bottom:1.2rem;}
@@ -381,9 +381,17 @@ footer{background:#0c2610;color:rgba(255,255,255,.4);padding:1.05rem 7vw;display
   .zon-layout,.dc-cta,.start-contact,.vgl-grid,.tvt-grid,.stappen{grid-template-columns:1fr;}
   .dak-grid{grid-template-columns:repeat(2,1fr);}
   .sh-knoppen{flex-direction:column;}
-  .fix-hero,.repair-hero{flex-direction:column;}
+  .fix-hero,.repair-hero{flex-direction:column;text-align:center;}
   .st{font-size:.62rem;padding:.62rem .28rem;}
   .start-contact{padding:1.5rem;}
+  /* Mobiel: scan-balk overflow voorkomen */
+  .scan-balk{padding:.4rem 3vw;}
+  .scan-stappen{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .scan-logo-naam{display:none;}
+  /* Mobiel: over-actie email netjes centreren */
+  .over-actie .knop{display:block;width:fit-content;margin:0 auto;word-break:break-word;text-align:center;}
+  /* Mobiel: footer altijd onderaan */
+  #s0,#s1,#s2,#s3,#s4,#s5,#s6{min-height:100vh;}
 }
 /* Hamburger en mobiel menu */
 .hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:.5rem;}
