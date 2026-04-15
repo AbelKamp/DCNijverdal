@@ -2,7 +2,7 @@
 /* Systeem fonts als vervanging voor Nunito en Lora */
 :root {
   --font-sans: 'Aptos Display', 'Aptos', 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
-  --font-serif: 'Aptos Serif', 'Book Antiqua', Palatino, Georgia, serif;
+  --font-serif: 'Aptos Display', 'Aptos', 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
 }
 
 
@@ -400,3 +400,55 @@ footer{background:#0c2610;color:rgba(255,255,255,.4);padding:1.05rem 7vw;display
 .mobiel-menu{position:fixed;top:56px;left:0;right:0;background:white;box-shadow:0 4px 18px rgba(0,0,0,.12);z-index:998;padding:.75rem 1rem;display:flex;flex-direction:column;gap:.4rem;}
 .mobiel-menu button{background:none;border:none;text-align:left;padding:.75rem 1rem;border-radius:10px;font-family:var(--font-sans);font-size:.9rem;font-weight:700;color:var(--g1);cursor:pointer;transition:background .2s;}
 .mobiel-menu button:hover{background:var(--bg);}
+
+
+/* HERO-SERIF-OVERRIDE - alleen de grote hero titel krijgt serif */
+.sh-h1{font-family:'Aptos Serif','Book Antiqua',Palatino,Georgia,serif !important;}
+
+
+
+/* === STAANDE MOBIEL FIXES (alleen portrait) === */
+@media (max-width: 680px) and (orientation: portrait) {
+  /* 1. Neem contact op: email niet afkappen, balkje binnen scherm */
+  .sc-box{
+    padding: 1rem;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+  .sc-rij{
+    gap: .5rem;
+    flex-wrap: nowrap;
+    min-width: 0;
+  }
+  .sc-rij > div{
+    min-width: 0;
+    flex: 1;
+  }
+  .sc-val{
+    min-width: 0;
+  }
+  .sc-val a,
+  .sc-val span{
+    font-size: .72rem;
+    word-break: break-all;
+    overflow-wrap: anywhere;
+    display: inline-block;
+    max-width: 100%;
+    line-height: 1.3;
+  }
+
+  /* 2. Repair Café knop: email volledig leesbaar, geen rare afbreking */
+  .over-actie-bl .knop-wit,
+  .over-actie .knop-wit{
+    font-size: .72rem;
+    padding: .7rem .8rem;
+    word-break: break-all;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    display: inline-block;
+    max-width: 100%;
+    box-sizing: border-box;
+    line-height: 1.35;
+  }
+}
