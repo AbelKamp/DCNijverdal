@@ -122,8 +122,12 @@ function toonPanel(naam, tab) {
 }
  
 /* ══ NAVIGATIE ══ */
-var SEC = ['s0','s1','s2','s3','s4','s5','s6'];
-function naarStap(n) {
+var SEC = ['s0','s1','s2','s3','s4','s5','s6','s7'];
+var ANKERNAMEN = {0:'home',1:'scan-woning',2:'scan-checklist',3:'scan-resultaat',4:'zonnepanelen',5:'subsidies',6:'diensten',7:'faq'};
+var ANKERINDEX = {};
+Object.keys(ANKERNAMEN).forEach(function(k){ ANKERINDEX[ANKERNAMEN[k]] = parseInt(k); });
+
+function naarStap(n, updateHash) {
   for (var i = 0; i < SEC.length; i++) {
     var el = document.getElementById(SEC[i]);
     if (el) el.style.display = (i === n) ? 'block' : 'none';
@@ -156,8 +160,8 @@ function naarStap(n) {
   if (n === 0) renderNieuws();
   window.scrollTo(0, 0);
   // Nav knoppen highlight
-  var nkMap = {0:'nk0',1:'nk1',2:'nk1',3:'nk1',4:'nk4',5:'nk5',6:'nk6'};
-  ['nk0','nk1','nk4','nk5','nk6'].forEach(function(id){
+  var nkMap = {0:'nk0',1:'nk1',2:'nk1',3:'nk1',4:'nk4',5:'nk5',6:'nk6',7:'nk7'};
+  ['nk0','nk1','nk4','nk5','nk6','nk7'].forEach(function(id){
     var el = document.getElementById(id);
     if(el) el.classList.remove('hl');
   });
@@ -166,7 +170,20 @@ function naarStap(n) {
     var el = document.getElementById(aktief);
     if(el && aktief !== 'nk1') el.classList.add('hl');
   }
+  // URL hash bijwerken
+  if (updateHash !== false && ANKERNAMEN[n]) {
+    history.replaceState(null, '', '#' + ANKERNAMEN[n]);
+  }
 }
+
+/* ══ ANKERLINKS ══ */
+function laadVanHash() {
+  var hash = window.location.hash.replace('#','');
+  if (hash && ANKERINDEX[hash] !== undefined) {
+    naarStap(ANKERINDEX[hash], false);
+  }
+}
+window.addEventListener('hashchange', laadVanHash);
  
 /* ══ STAP 1 ══ */
 var wF=1.0, iF=1.0, elF=1.0, aantalBew=2, antw={};
@@ -234,8 +251,9 @@ function stel(knop, keuze) {
     }
   }
   updateVG();
+  slaaScanOp();
 }
- 
+
 function updateVG() {
   var tot = document.querySelectorAll('.ci').length;
   var b = Object.keys(antw).length;
@@ -322,6 +340,16 @@ function berekenRes() {
   tips.sort(function(a, b) { return b.b - a.b; });
   document.getElementById('r-bedrag').textContent = '€ ' + tot.toLocaleString('nl-NL');
   document.getElementById('r-sub').textContent = 'Op basis van ' + Object.keys(antw).length + ' ingevulde vragen';
+  // Vergelijking met gemiddeld Nederlandse huishouden
+  var gemiddeld = Math.round(1850 * wF);
+  var vgl = document.getElementById('r-vergelijk');
+  if (vgl && tot > 0) {
+    var pct = Math.round((tot / gemiddeld) * 100);
+    vgl.style.display = 'block';
+    vgl.innerHTML = '📊 Een gemiddeld Nederlands huishouden heeft ~€' + gemiddeld.toLocaleString('nl-NL') + ' bespaarpotentieel. Uw berekend potentieel is <strong>' + pct + '%</strong> hiervan.';
+  } else if (vgl) {
+    vgl.style.display = 'none';
+  }
   var tHtml = '';
   if (tips.length) {
     tips.forEach(function(t) {
@@ -385,9 +413,42 @@ function filterSub(cat, k) {
   });
 }
  
+/* ══ LOCALSTORAGE: SCAN OPSLAAN EN HERSTELLEN ══ */
+function slaaScanOp() {
+  try {
+    localStorage.setItem('dc_antw', JSON.stringify(antw));
+    localStorage.setItem('dc_wF', wF);
+    localStorage.setItem('dc_iF', iF);
+    localStorage.setItem('dc_elF', elF);
+    localStorage.setItem('dc_bew', aantalBew);
+  } catch(e) {}
+}
+
+function herstelScan() {
+  try {
+    var opgeslagen = localStorage.getItem('dc_antw');
+    if (!opgeslagen) return false;
+    antw = JSON.parse(opgeslagen);
+    wF  = parseFloat(localStorage.getItem('dc_wF'))  || 1.0;
+    iF  = parseFloat(localStorage.getItem('dc_iF'))  || 1.0;
+    elF = parseFloat(localStorage.getItem('dc_elF')) || 1.0;
+    aantalBew = parseInt(localStorage.getItem('dc_bew')) || 2;
+    // Herstel UI: antwoorden markeren
+    Object.keys(antw).forEach(function(id) {
+      var ci = document.querySelector('[data-id="' + id + '"]');
+      if (ci) ci.classList.add(antw[id]);
+    });
+    // Bewoners tellen
+    document.getElementById('bew-n').textContent = aantalBew;
+    updateVG();
+    return Object.keys(antw).length > 0;
+  } catch(e) { return false; }
+}
+
 /* ══ HERSTART ══ */
 function herstart() {
   antw = {};
+  try { localStorage.removeItem('dc_antw'); } catch(e) {}
   document.querySelectorAll('.ci').forEach(function(ci) { ci.classList.remove('ja','nee','verborgen'); });
   document.querySelectorAll('.w-kaart,.bj,.el-k').forEach(function(k) { k.classList.remove('ok'); });
   wF=1.0; iF=1.0; elF=1.0; aantalBew=2;
@@ -396,6 +457,11 @@ function herstart() {
   naarStap(1);
 }
  
+/* ══ PRINT RESULTATEN ══ */
+function printResultaat() {
+  window.print();
+}
+
 /* ══ INIT ══ */
 window.addEventListener('scroll', function() {
   document.getElementById('nav').classList.toggle('vast', window.scrollY > 80);
@@ -407,6 +473,10 @@ for (var i = 0; i < SEC.length; i++) {
 }
 renderNieuws();
 berekenZon();
+// Herstel scan vanuit localStorage (voor pagina-herlaad)
+herstelScan();
+// Navigeer naar ankerlink als aanwezig in URL
+laadVanHash();
 
 /* ══ HAMBURGER MENU ══ */
 function toggleMobielMenu(){

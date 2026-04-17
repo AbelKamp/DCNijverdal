@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Duurzaamheidscentrum Nijverdal</title>
+<title>Duurzaamheidscentrum Nijverdal — gratis energieadvies &amp; energiescan</title>
+<meta name="description" content="Het Duurzaamheidscentrum Nijverdal biedt gratis energieadvies, energiescan, FIXbrigade, Repair Café en subsidieoverzicht voor inwoners van gemeente Hellendoorn.">
 <link rel="stylesheet" href="style.css">
 
 </head>
@@ -20,6 +21,7 @@
     <button class="nav-k" onclick="naarStap(4)" id="nk4">☀ Zonnepanelen</button>
     <button class="nav-k" onclick="naarStap(5)" id="nk5">€ Subsidies</button>
     <button class="nav-k" onclick="naarStap(6)" id="nk6">🔧 Onze diensten</button>
+    <button class="nav-k" onclick="naarStap(7)" id="nk7">❓ FAQ</button>
   </div>
   <button class="hamburger" id="hamburger" aria-label="Menu openen" aria-expanded="false" aria-controls="mobiel-menu" onclick="toggleMobielMenu()">
     <span></span><span></span><span></span>
@@ -31,6 +33,7 @@
   <button onclick="naarStap(4);sluitMobielMenu()" aria-label="Zonnepanelen rekenmachine">☀ Zonnepanelen</button>
   <button onclick="naarStap(5);sluitMobielMenu()" aria-label="Bekijk subsidies">€ Subsidies</button>
   <button onclick="naarStap(6);sluitMobielMenu()" aria-label="Onze diensten">🔧 Onze diensten</button>
+  <button onclick="naarStap(7);sluitMobielMenu()" aria-label="Veelgestelde vragen">❓ FAQ</button>
 </div>
  
 <!-- STAP NAV -->
@@ -103,6 +106,14 @@
       </div>
     </div>
  
+    <!-- Succescijfers -->
+    <div class="start-stats">
+      <div class="stat-k"><div class="stat-n">1.000+</div><div class="stat-l">items gerepareerd bij het Repair Café</div></div>
+      <div class="stat-k"><div class="stat-n">350+</div><div class="stat-l">huishoudens geholpen door de FIXbrigade</div></div>
+      <div class="stat-k"><div class="stat-n">gratis</div><div class="stat-l">al onze diensten — gerund door vrijwilligers</div></div>
+      <div class="stat-k"><div class="stat-n">€ 500</div><div class="stat-l">gemiddelde besparing na energieadvies per jaar</div></div>
+    </div>
+
     <!-- Nieuws op startpagina -->
     <div class="start-sec-titel">Actueel <em>nieuws</em></div>
     <div class="start-nieuws" id="start-nieuws-grid"></div>
@@ -299,6 +310,7 @@
     <div class="r-bedrag" id="r-bedrag">€ 0</div>
     <div class="r-lbl">per jaar mogelijk te besparen</div>
     <div class="r-sub" id="r-sub">Vul de checklist in voor een persoonlijk overzicht</div>
+    <div id="r-vergelijk" style="display:none;margin-top:.85rem;background:rgba(255,255,255,.12);border-radius:10px;padding:.75rem 1rem;font-size:.79rem;color:rgba(255,255,255,.85);line-height:1.6;"></div>
   </div>
  
   <div class="dc-cta">
@@ -326,6 +338,7 @@
   <div style="margin-top:1.75rem;display:flex;flex-wrap:wrap;gap:.72rem;">
     <button class="knop" onclick="naarStap(2)">← Checklist aanpassen</button>
     <button class="knop knop-bl" onclick="naarStap(4)">☀ Zonnepanelen rekenmachine</button>
+    <button class="knop knop-licht" onclick="printResultaat()">🖨 Resultaat afdrukken</button>
     <button class="knop knop-licht" onclick="herstart()">Opnieuw beginnen</button>
   </div>
 </section>
@@ -349,7 +362,10 @@
     <div class="zon-form">
       <h3>Vul uw gegevens in</h3>
       <div class="z-v">
-        <label>Verdeel panelen per dakrichting</label>
+        <label>Verdeel panelen per dakrichting <button type="button" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'" style="background:none;border:1px solid var(--bl2);border-radius:50px;padding:.1rem .5rem;font-size:.65rem;color:var(--bl);cursor:pointer;margin-left:.4rem;font-family:var(--font-sans);font-weight:700;">? uitleg</button></label>
+        <div style="display:none;background:var(--bl3);border-radius:8px;padding:.7rem .85rem;font-size:.76rem;color:var(--t2);line-height:1.6;margin-bottom:.55rem;">
+          <strong style="color:var(--g1);">Dakrichting bepalen:</strong> Sta bij uw woning en kijk welke kant het dak op 'kijkt'. Een dak dat op het <strong>zuiden</strong> gericht is levert het meeste op (100%). <strong>Oost/West</strong> levert ~87%, <strong>Noord</strong> slechts ~65%. Twijfelt u? Gebruik Google Maps: het noorden is boven. Heeft u een plat dak, vul dan alles bij Zuid in.
+        </div>
         <div class="dak-grid">
           <div class="dak-item"><label>🔆 Zuid</label><input type="number" id="z-z" value="8" min="0" oninput="berekenZon()"></div>
           <div class="dak-item"><label>🌅 Oost</label><input type="number" id="z-o" value="0" min="0" oninput="berekenZon()"></div>
@@ -383,6 +399,16 @@
         </div>
       </div>
       <div class="z-adv" id="z-adv"></div>
+      <details style="margin-top:.78rem;background:#fff8e1;border:1px solid #ffe082;border-radius:9px;padding:.75rem .9rem;">
+        <summary style="font-size:.77rem;font-weight:700;color:#7a5a00;cursor:pointer;">📖 Wat verandert er met de salderingsregeling?</summary>
+        <div style="font-size:.75rem;color:#5a4000;line-height:1.65;margin-top:.55rem;">
+          <strong>Tot 2025:</strong> U ontving voor elke teruggeleverde kWh hetzelfde bedrag als u betaalde voor inkoop (bijv. €0,36). Dit heet <em>salderen</em>.<br>
+          <strong>Vanaf 2025:</strong> Het teruglevertarief daalt sterk (nu ~€0,07–0,09/kWh). Elke kWh die u <em>zelf verbruikt</em> is €0,30+ meer waard dan terugleveren.<br>
+          <strong>Advies:</strong> Zorg dat u zoveel mogelijk stroom overdag zelf verbruikt — thuiswerken, wassen, laden. Of overweeg een thuisbatterij.<br>
+          <a href="https://www.rvo.nl" target="_blank" style="color:var(--bl);font-weight:700;font-size:.73rem;">Meer info bij RVO.nl →</a>
+        </div>
+      </details>
+      <button class="knop" style="margin-top:1.1rem;font-size:.8rem;" onclick="naarStap(5)">€ Bekijk subsidies voor zonnepanelen →</button>
       <p class="z-noot">* Zuid 875 kWh/kWp, Oost/West 762 kWh/kWp, Noord 569 kWh/kWp per jaar.</p>
     </div>
   </div>
@@ -540,6 +566,28 @@
   </div>
 </section>
  
+<!-- ═══ S7: FAQ ═══ -->
+<section class="sec" id="s7" style="display:none;">
+  <div class="sec-tag">Veelgestelde vragen</div>
+  <h2 class="sec-titel">Vragen &amp;<br><em>antwoorden</em></h2>
+  <p class="sec-sub">De meest gestelde vragen over het Duurzaamheidscentrum, de FIXbrigade en energiebesparing.</p>
+  <div class="faq-lijst">
+    <details class="faq-item"><summary>Wat is het Duurzaamheidscentrum Nijverdal?</summary><div class="faq-antw">Het Duurzaamheidscentrum is een gratis inloop voor inwoners van gemeente Hellendoorn. Wij geven persoonlijk energieadvies, bieden de FIXbrigade-service, organiseren het Repair Café en helpen u bij subsidieaanvragen. Alles wordt gerund door enthousiaste vrijwilligers.</div></details>
+    <details class="faq-item"><summary>Is het advies echt gratis?</summary><div class="faq-antw">Ja, al onze diensten zijn volledig gratis. De FIXbrigade, energiecoach, Repair Café en persoonlijk advies kosten u niets. We worden ondersteund door gemeente Hellendoorn en Rabobank.</div></details>
+    <details class="faq-item"><summary>Wat doet de FIXbrigade precies?</summary><div class="faq-antw">De FIXbrigade komt gratis bij u thuis voor kleine energiebesparende klussen: tochtstrips plaatsen, radiatorfolie aanbrengen, LED-lampen verwisselen en een waterbesparende douchekop installeren. Dit gaat in drie bezoeken: intake, uitvoering en controle.</div></details>
+    <details class="faq-item"><summary>Hoe werkt de energiescan op deze website?</summary><div class="faq-antw">De scan stelt u een reeks vragen over uw woning, apparaten en gewoontes. Op basis van uw antwoorden berekent de tool hoeveel u per jaar kunt besparen en welke maatregelen het meeste opleveren. De scan werkt voor heel Nederland — u hoeft geen inwoner van Hellendoorn te zijn.</div></details>
+    <details class="faq-item"><summary>Wat zijn de openingstijden?</summary><div class="faq-antw">Het Duurzaamheidscentrum en het Repair Café zijn open van woensdag t/m zaterdag van 13:00 tot 17:00 uur. Adres: Grotestraat 178A, Nijverdal. Gewoon binnenlopen, geen afspraak nodig.</div></details>
+    <details class="faq-item"><summary>Welke subsidies zijn beschikbaar voor mijn woning?</summary><div class="faq-antw">Er zijn landelijke subsidies (ISDE voor warmtepomp, zonneboiler en isolatie), leningen via het Warmtefonds, BTW-vrijstelling op zonnepanelen, en lokale regelingen via gemeente Hellendoorn. Bekijk ons <button onclick="naarStap(5)" style="background:none;border:none;color:var(--g2);font-weight:700;cursor:pointer;font-family:var(--font-sans);font-size:inherit;padding:0;text-decoration:underline;">subsidieoverzicht</button> voor alle details.</div></details>
+    <details class="faq-item"><summary>Lonen zonnepanelen nog met het nieuwe salderingssysteem?</summary><div class="faq-antw">Dat hangt af van uw situatie. Eigen verbruik overdag is nu veel meer waard dan terugleveren. Gebruik onze <button onclick="naarStap(4)" style="background:none;border:none;color:var(--g2);font-weight:700;cursor:pointer;font-family:var(--font-sans);font-size:inherit;padding:0;text-decoration:underline;">zonnepanelen rekenmachine</button> om uw persoonlijke terugverdientijd te berekenen.</div></details>
+    <details class="faq-item"><summary>Kan het Repair Café elk apparaat repareren?</summary><div class="faq-antw">Het Repair Café repareert bijna alles met een stekker, maar ook meubels en speelgoed. Sommige reparaties zijn te complex of te gevaarlijk voor onze vrijwilligers. Neem bij twijfel vooraf contact op via <a href="mailto:duurzaamheidscentrumnijverdal@gmail.com" style="color:var(--bl);">duurzaamheidscentrumnijverdal@gmail.com</a>.</div></details>
+    <details class="faq-item"><summary>Hoe word ik vrijwilliger?</summary><div class="faq-antw">Fantastisch! Stuur een e-mail naar <a href="mailto:duurzaamheidscentrumnijverdal@gmail.com" style="color:var(--bl);">duurzaamheidscentrumnijverdal@gmail.com</a> of kom langs op Grotestraat 178A. Wij zoeken mensen met kennis van techniek, energie, of gewoon veel enthousiasme!</div></details>
+  </div>
+  <div style="margin-top:2rem;display:flex;flex-wrap:wrap;gap:.72rem;">
+    <button class="knop" onclick="naarStap(0)">← Terug naar home</button>
+    <a href="mailto:duurzaamheidscentrumnijverdal@gmail.com" class="knop knop-bl">📧 Stel uw vraag →</a>
+  </div>
+</section>
+
 <!-- FOOTER -->
 <footer>
   <div class="fm">Duurzaamheids<span>centrum</span> Nijverdal</div>
