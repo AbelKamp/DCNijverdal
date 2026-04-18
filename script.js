@@ -122,8 +122,12 @@ function toonPanel(naam, tab) {
 }
  
 /* ══ NAVIGATIE ══ */
-var SEC = ['s0','s1','s2','s3','s4','s5','s6'];
-function naarStap(n) {
+var SEC = ['s0','s1','s2','s3','s4','s5','s6','s7'];
+var ANKERNAMEN = {0:'home',1:'scan-woning',2:'scan-checklist',3:'scan-resultaat',4:'zonnepanelen',5:'subsidies',6:'diensten',7:'faq'};
+var ANKERINDEX = {};
+Object.keys(ANKERNAMEN).forEach(function(k){ ANKERINDEX[ANKERNAMEN[k]] = parseInt(k); });
+
+function naarStap(n, updateHash) {
   for (var i = 0; i < SEC.length; i++) {
     var el = document.getElementById(SEC[i]);
     if (el) el.style.display = (i === n) ? 'block' : 'none';
@@ -156,8 +160,8 @@ function naarStap(n) {
   if (n === 0) renderNieuws();
   window.scrollTo(0, 0);
   // Nav knoppen highlight
-  var nkMap = {0:'nk0',1:'nk1',2:'nk1',3:'nk1',4:'nk4',5:'nk5',6:'nk6'};
-  ['nk0','nk1','nk4','nk5','nk6'].forEach(function(id){
+  var nkMap = {0:'nk0',1:'nk1',2:'nk1',3:'nk1',4:'nk4',5:'nk5',6:'nk6',7:'nk7'};
+  ['nk0','nk1','nk4','nk5','nk6','nk7'].forEach(function(id){
     var el = document.getElementById(id);
     if(el) el.classList.remove('hl');
   });
@@ -166,7 +170,20 @@ function naarStap(n) {
     var el = document.getElementById(aktief);
     if(el && aktief !== 'nk1') el.classList.add('hl');
   }
+  // URL hash bijwerken
+  if (updateHash !== false && ANKERNAMEN[n]) {
+    history.replaceState(null, '', '#' + ANKERNAMEN[n]);
+  }
 }
+
+/* ══ ANKERLINKS ══ */
+function laadVanHash() {
+  var hash = window.location.hash.replace('#','');
+  if (hash && ANKERINDEX[hash] !== undefined) {
+    naarStap(ANKERINDEX[hash], false);
+  }
+}
+window.addEventListener('hashchange', laadVanHash);
  
 /* ══ STAP 1 ══ */
 var wF=1.0, iF=1.0, elF=1.0, aantalBew=2, antw={};
@@ -234,8 +251,9 @@ function stel(knop, keuze) {
     }
   }
   updateVG();
+  slaaScanOp();
 }
- 
+
 function updateVG() {
   var tot = document.querySelectorAll('.ci').length;
   var b = Object.keys(antw).length;
@@ -244,49 +262,51 @@ function updateVG() {
 }
  
 /* ══ RESULTAAT ══ */
+// Investeringsbedragen: richtprijzen 2025 (bron: Milieu Centraal, RVO ISDE, Nibud)
+// invSchaal:'wF' = bedrag schaalt mee met woninggrootte, 'geen' = vast bedrag
 var tipData = [
-  {id:'cv-oud',       n:'Oude CV-ketel vervangen',       b:100, u:'HR-ketel of warmtepomp is efficiënter. Subsidie via ISDE.'},
-  {id:'wasdroger',    n:'Wasdroger',                     b:105, u:'Gebruik waslijn of warmtepompdroger (A+++).'},
-  {id:'oud-koelkast', n:'Verouderde koelkast/vriezer',   b:85,  u:'Verouderde apparaten verbruiken 2–3× meer.'},
-  {id:'vriezer-ijs',  n:'Vriezer ontdooien',             b:52,  u:'IJsaanslag laat de motor harder werken.'},
-  {id:'elek-vloer',   n:'Elektrische verwarming',        b:120, u:'Warmtepomp of slimme thermostaat is beter.'},
-  {id:'airco',        n:'Airconditioning',               b:55,  u:'2°C hoger instellen en gordijnen sluiten.'},
-  {id:'terrasverw',   n:'Terrasverwarming',              b:90,  u:'Gebruik een buitendeken.'},
-  {id:'infrarood',    n:'Infraroodpanelen',              b:110, u:'Als primaire verwarming hoog verbruik.'},
-  {id:'hottub',       n:'Hottub/jacuzzi',                b:220, u:'Verbruikt 1.500–3.000 kWh/jaar.'},
-  {id:'boiler-elek',  n:'Elektrische boiler',            b:55,  u:'Zet op een timer.'},
-  {id:'regendouche',  n:'Regendouche',                   b:110, u:'Verbruikt dubbel zoveel warm water.'},
-  {id:'normaal-douche',n:'Waterbesparende douchekop',    b:45,  u:'FIXbrigade plaatst gratis!'},
-  {id:'bad',          n:'Bad minder vullen',             b:65,  u:'150–200 liter warm water per bad.'},
-  {id:'lang-douche',  n:'Korter douchen',                b:70,  u:'Elke minuut korter bespaart direct.'},
-  {id:'wasmachine-heet',n:'Wassen op lagere temperatuur',b:38,  u:'30°C spaart 50–60% op wasenergie.'},
-  {id:'keramisch',    n:'Keramische kookplaat',          b:45,  u:'Inductie is 30–40% zuiniger.'},
-  {id:'oven',         n:'Oven vs. airfryer',             b:32,  u:'Airfryer gebruikt 50–70% minder.'},
-  {id:'frituur',      n:'Frituurpan',                   b:28,  u:'Vervang door airfryer.'},
-  {id:'waterkoker',   n:'Waterkoker',                   b:12,  u:'Kook alleen wat u nodig heeft.'},
-  {id:'laadpaal',     n:'Slim laden EV',                b:65,  u:'Laad in daluren (22:00–07:00).'},
-  {id:'aquarium',     n:'Aquarium',                     b:58,  u:'LED-verlichting en efficiënte filter helpen.'},
-  {id:'gaming-pc',    n:'Computer/gaming-pc',           b:75,  u:'Echt uitzetten bespaart structureel.'},
-  {id:'opladers',     n:'Opladers uit stopcontact',     b:28,  u:'Schakelbare stekkerdoos aanschaffen.'},
-  {id:'tv-standby',   n:'TV echt uitzetten',            b:16,  u:'Standby verbruikt 5–15W continu.'},
-  {id:'enkel-glas',   n:'Enkel glas vervangen',         b:160, u:'HR++-glas is de beste stap. Subsidie via ISDE.'},
-  {id:'dubbel-glas',  n:'HR++-glas upgrade',            b:45,  u:'Vermindert warmteverlies verder.'},
-  {id:'geen-led',     n:'Overstap naar LED',            b:75,  u:'Terugverdientijd onder een jaar.'}
+  {id:'cv-oud',       n:'Oude CV-ketel vervangen',       b:100, u:'HR-ketel of warmtepomp is efficiënter. Subsidie via ISDE.',       inv:3200, invSchaal:'wF'},
+  {id:'wasdroger',    n:'Wasdroger',                     b:105, u:'Gebruik waslijn of warmtepompdroger (A+++).',                      inv:800,  invSchaal:'geen'},
+  {id:'oud-koelkast', n:'Verouderde koelkast/vriezer',   b:85,  u:'Verouderde apparaten verbruiken 2–3× meer.',                      inv:700,  invSchaal:'geen'},
+  {id:'vriezer-ijs',  n:'Vriezer ontdooien',             b:52,  u:'IJsaanslag laat de motor harder werken.',                         inv:0,    invSchaal:'geen'},
+  {id:'elek-vloer',   n:'Elektrische verwarming',        b:120, u:'Warmtepomp of slimme thermostaat is beter.',                      inv:0,    invSchaal:'geen'},
+  {id:'airco',        n:'Airconditioning',               b:55,  u:'2°C hoger instellen en gordijnen sluiten.',                       inv:0,    invSchaal:'geen'},
+  {id:'terrasverw',   n:'Terrasverwarming',              b:90,  u:'Gebruik een buitendeken.',                                        inv:0,    invSchaal:'geen'},
+  {id:'infrarood',    n:'Infraroodpanelen',              b:110, u:'Als primaire verwarming hoog verbruik.',                          inv:0,    invSchaal:'geen'},
+  {id:'hottub',       n:'Hottub/jacuzzi',                b:220, u:'Verbruikt 1.500–3.000 kWh/jaar.',                                 inv:0,    invSchaal:'geen'},
+  {id:'boiler-elek',  n:'Elektrische boiler',            b:55,  u:'Zet op een timer.',                                               inv:1600, invSchaal:'geen'},
+  {id:'regendouche',  n:'Regendouche',                   b:110, u:'Verbruikt dubbel zoveel warm water.',                             inv:50,   invSchaal:'geen'},
+  {id:'normaal-douche',n:'Waterbesparende douchekop',    b:45,  u:'FIXbrigade plaatst gratis!',                                      inv:30,   invSchaal:'geen'},
+  {id:'bad',          n:'Bad minder vullen',             b:65,  u:'150–200 liter warm water per bad.',                               inv:0,    invSchaal:'geen'},
+  {id:'lang-douche',  n:'Korter douchen',                b:70,  u:'Elke minuut korter bespaart direct.',                             inv:0,    invSchaal:'geen'},
+  {id:'wasmachine-heet',n:'Wassen op lagere temperatuur',b:38,  u:'30°C spaart 50–60% op wasenergie.',                               inv:0,    invSchaal:'geen'},
+  {id:'keramisch',    n:'Keramische kookplaat',          b:45,  u:'Inductie is 30–40% zuiniger.',                                    inv:450,  invSchaal:'geen'},
+  {id:'oven',         n:'Oven vs. airfryer',             b:32,  u:'Airfryer gebruikt 50–70% minder.',                                inv:100,  invSchaal:'geen'},
+  {id:'frituur',      n:'Frituurpan',                   b:28,  u:'Vervang door airfryer.',                                          inv:0,    invSchaal:'geen'},
+  {id:'waterkoker',   n:'Waterkoker',                   b:12,  u:'Kook alleen wat u nodig heeft.',                                  inv:0,    invSchaal:'geen'},
+  {id:'laadpaal',     n:'Slim laden EV',                b:65,  u:'Laad in daluren (22:00–07:00).',                                  inv:0,    invSchaal:'geen'},
+  {id:'aquarium',     n:'Aquarium',                     b:58,  u:'LED-verlichting en efficiënte filter helpen.',                    inv:0,    invSchaal:'geen'},
+  {id:'gaming-pc',    n:'Computer/gaming-pc',           b:75,  u:'Echt uitzetten bespaart structureel.',                            inv:0,    invSchaal:'geen'},
+  {id:'opladers',     n:'Opladers uit stopcontact',     b:28,  u:'Schakelbare stekkerdoos aanschaffen.',                            inv:25,   invSchaal:'geen'},
+  {id:'tv-standby',   n:'TV echt uitzetten',            b:16,  u:'Standby verbruikt 5–15W continu.',                                inv:20,   invSchaal:'geen'},
+  {id:'enkel-glas',   n:'Enkel glas vervangen',         b:160, u:'HR++-glas is de beste stap. Subsidie via ISDE.',                  inv:6000, invSchaal:'wF'},
+  {id:'dubbel-glas',  n:'HR++-glas upgrade',            b:45,  u:'Vermindert warmteverlies verder.',                                inv:2500, invSchaal:'wF'},
+  {id:'geen-led',     n:'Overstap naar LED',            b:75,  u:'Terugverdientijd onder een jaar.',                                inv:300,  invSchaal:'geen'}
 ];
 var kansenNee = {
-  'spouwmuur':    {b:160, n:'Spouwmuurisolatie aanbrengen',  u:'Meest kosteneffectief voor woningen voor 2000.'},
-  'dakiso':       {b:110, n:'Dakisolatie aanbrengen',        u:'Via het dak verliest u 25–30% warmte.'},
-  'vloeriso':     {b:75,  n:'Vloer-/kruipruimte-isolatie',   u:'Goedkoop en effectief.'},
-  'tocht':        {b:38,  n:'Tochtstrips aanbrengen',        u:'FIXbrigade doet dit gratis bij u thuis!'},
-  'radfolie':     {b:48,  n:'Radiatorfolie plaatsen',        u:'FIXbrigade plaatst het gratis!'},
-  'zonnepanelen': {b:650, n:'Zonnepanelen plaatsen',         u:'Bekijk de zonnepanelen rekenmachine.'},
-  'thuisbatterij':{b:130, n:'Thuisbatterij overwegen',       u:'Steeds interessanter nu saldering afneemt.'},
-  'warmtepomp':   {b:200, n:'Warmtepomp installeren',        u:'3–4× efficiënter dan gas.'},
-  'slimme-therm': {b:65,  n:'Slimme thermostaat',            u:'Bespaart gemiddeld 65 euro per jaar.'},
-  'bespaardouche':{b:58,  n:'Waterbesparende douchekop',     u:'FIXbrigade plaatst gratis!'},
-  'zonneboiler':  {b:85,  n:'Zonneboiler',                   u:'50–70% besparing op warmwaterkosten.'},
-  'dyn-contract': {b:55,  n:'Dynamisch energiecontract',     u:'Aanzienlijk besparen met daluren.'},
-  'airfryer':     {b:22,  n:'Airfryer aanschaffen',          u:'50–70% minder dan een oven.'}
+  'spouwmuur':    {b:160, n:'Spouwmuurisolatie aanbrengen',  u:'Meest kosteneffectief voor woningen voor 2000.',  inv:3500, invSchaal:'wF'},
+  'dakiso':       {b:110, n:'Dakisolatie aanbrengen',        u:'Via het dak verliest u 25–30% warmte.',           inv:5000, invSchaal:'wF'},
+  'vloeriso':     {b:75,  n:'Vloer-/kruipruimte-isolatie',   u:'Goedkoop en effectief.',                          inv:4000, invSchaal:'wF'},
+  'tocht':        {b:38,  n:'Tochtstrips aanbrengen',        u:'FIXbrigade doet dit gratis bij u thuis!',         inv:250,  invSchaal:'geen'},
+  'radfolie':     {b:48,  n:'Radiatorfolie plaatsen',        u:'FIXbrigade plaatst het gratis!',                  inv:120,  invSchaal:'geen'},
+  'zonnepanelen': {b:650, n:'Zonnepanelen plaatsen',         u:'Bekijk de zonnepanelen rekenmachine.',            inv:8000, invSchaal:'wF'},
+  'thuisbatterij':{b:130, n:'Thuisbatterij overwegen',       u:'Steeds interessanter nu saldering afneemt.',      inv:6000, invSchaal:'geen'},
+  'warmtepomp':   {b:200, n:'Warmtepomp installeren',        u:'3–4× efficiënter dan gas.',                       inv:10000,invSchaal:'wF'},
+  'slimme-therm': {b:65,  n:'Slimme thermostaat',            u:'Bespaart gemiddeld 65 euro per jaar.',            inv:180,  invSchaal:'geen'},
+  'bespaardouche':{b:58,  n:'Waterbesparende douchekop',     u:'FIXbrigade plaatst gratis!',                      inv:40,   invSchaal:'geen'},
+  'zonneboiler':  {b:85,  n:'Zonneboiler',                   u:'50–70% besparing op warmwaterkosten.',            inv:3500, invSchaal:'wF'},
+  'dyn-contract': {b:55,  n:'Dynamisch energiecontract',     u:'Aanzienlijk besparen met daluren.',               inv:0,    invSchaal:'geen'},
+  'airfryer':     {b:22,  n:'Airfryer aanschaffen',          u:'50–70% minder dan een oven.',                     inv:80,   invSchaal:'geen'}
 };
 var goedItems = {
   'led':'LED-verlichting','warmtepomp':'Warmtepomp','zonnepanelen':'Zonnepanelen',
@@ -299,20 +319,24 @@ var goedItems = {
 };
  
 function berekenRes() {
-  var tot = 0, tips = [], goed = [];
+  var tot = 0, totInv = 0, tips = [], goed = [];
   tipData.forEach(function(t) {
     if (antw[t.id] === 'ja') {
       var b = Math.round(t.b * wF * (0.8 + aantalBew * 0.1) * iF * elF);
-      tips.push({n: t.n, b: b, u: t.u});
+      var invBedrag = t.invSchaal === 'wF' ? Math.round(t.inv * wF) : t.inv;
+      tips.push({n: t.n, b: b, u: t.u, inv: invBedrag});
       tot += b;
+      totInv += invBedrag;
     }
   });
   Object.keys(kansenNee).forEach(function(id) {
     if (antw[id] === 'nee') {
       var info = kansenNee[id];
       var b = Math.round(info.b * wF);
-      tips.push({n: info.n, b: b, u: info.u});
+      var invBedrag = info.invSchaal === 'wF' ? Math.round(info.inv * wF) : info.inv;
+      tips.push({n: info.n, b: b, u: info.u, inv: invBedrag});
       tot += b;
+      totInv += invBedrag;
     }
   });
   Object.keys(goedItems).forEach(function(id) {
@@ -322,10 +346,39 @@ function berekenRes() {
   tips.sort(function(a, b) { return b.b - a.b; });
   document.getElementById('r-bedrag').textContent = '€ ' + tot.toLocaleString('nl-NL');
   document.getElementById('r-sub').textContent = 'Op basis van ' + Object.keys(antw).length + ' ingevulde vragen';
+  // Vergelijking met gemiddeld Nederlandse huishouden
+  var gemiddeld = Math.round(1850 * wF);
+  var vgl = document.getElementById('r-vergelijk');
+  if (vgl && tot > 0) {
+    var pct = Math.round((tot / gemiddeld) * 100);
+    vgl.style.display = 'block';
+    vgl.innerHTML = '📊 Een gemiddeld Nederlands huishouden heeft ~€' + gemiddeld.toLocaleString('nl-NL') + ' bespaarpotentieel. Uw berekend potentieel is <strong>' + pct + '%</strong> hiervan.';
+  } else if (vgl) {
+    vgl.style.display = 'none';
+  }
+  // Investeringsblok tonen
+  var invBlok = document.getElementById('r-inv-blok');
+  if (invBlok && totInv > 0) {
+    invBlok.style.display = 'block';
+    document.getElementById('r-inv-bedrag').textContent = '€ ' + totInv.toLocaleString('nl-NL');
+    var tvtEl = document.getElementById('r-inv-tvt');
+    if (tot > 0) {
+      var tvt = Math.round(totInv / tot);
+      tvtEl.textContent = tvt > 0 && tvt < 100 ? 'Geschatte terugverdientijd: ' + tvt + ' jaar' : '';
+    } else {
+      tvtEl.textContent = '';
+    }
+  } else if (invBlok) {
+    invBlok.style.display = 'none';
+  }
   var tHtml = '';
   if (tips.length) {
     tips.forEach(function(t) {
-      tHtml += '<div class="tip-k"><div class="tip-top"><div class="tip-n">' + t.n + '</div><div class="tip-badge">~€' + t.b + '/jr</div></div><div class="tip-u">' + t.u + '</div></div>';
+      tHtml += '<div class="tip-k"><div class="tip-top"><div class="tip-n">' + t.n + '</div><div class="tip-badge">~€' + t.b + '/jr</div></div><div class="tip-u">' + t.u + '</div>';
+      if (t.inv > 0) {
+        tHtml += '<div class="tip-inv">💶 Investering: ~€' + t.inv.toLocaleString('nl-NL') + '</div>';
+      }
+      tHtml += '</div>';
     });
   } else {
     tHtml = '<div style="color:var(--t3);padding:1rem;">Vul de checklist in om tips te zien.</div>';
@@ -385,9 +438,42 @@ function filterSub(cat, k) {
   });
 }
  
+/* ══ LOCALSTORAGE: SCAN OPSLAAN EN HERSTELLEN ══ */
+function slaaScanOp() {
+  try {
+    localStorage.setItem('dc_antw', JSON.stringify(antw));
+    localStorage.setItem('dc_wF', wF);
+    localStorage.setItem('dc_iF', iF);
+    localStorage.setItem('dc_elF', elF);
+    localStorage.setItem('dc_bew', aantalBew);
+  } catch(e) {}
+}
+
+function herstelScan() {
+  try {
+    var opgeslagen = localStorage.getItem('dc_antw');
+    if (!opgeslagen) return false;
+    antw = JSON.parse(opgeslagen);
+    wF  = parseFloat(localStorage.getItem('dc_wF'))  || 1.0;
+    iF  = parseFloat(localStorage.getItem('dc_iF'))  || 1.0;
+    elF = parseFloat(localStorage.getItem('dc_elF')) || 1.0;
+    aantalBew = parseInt(localStorage.getItem('dc_bew')) || 2;
+    // Herstel UI: antwoorden markeren
+    Object.keys(antw).forEach(function(id) {
+      var ci = document.querySelector('[data-id="' + id + '"]');
+      if (ci) ci.classList.add(antw[id]);
+    });
+    // Bewoners tellen
+    document.getElementById('bew-n').textContent = aantalBew;
+    updateVG();
+    return Object.keys(antw).length > 0;
+  } catch(e) { return false; }
+}
+
 /* ══ HERSTART ══ */
 function herstart() {
   antw = {};
+  try { localStorage.removeItem('dc_antw'); } catch(e) {}
   document.querySelectorAll('.ci').forEach(function(ci) { ci.classList.remove('ja','nee','verborgen'); });
   document.querySelectorAll('.w-kaart,.bj,.el-k').forEach(function(k) { k.classList.remove('ok'); });
   wF=1.0; iF=1.0; elF=1.0; aantalBew=2;
@@ -396,6 +482,11 @@ function herstart() {
   naarStap(1);
 }
  
+/* ══ PRINT RESULTATEN ══ */
+function printResultaat() {
+  window.print();
+}
+
 /* ══ INIT ══ */
 window.addEventListener('scroll', function() {
   document.getElementById('nav').classList.toggle('vast', window.scrollY > 80);
@@ -407,6 +498,10 @@ for (var i = 0; i < SEC.length; i++) {
 }
 renderNieuws();
 berekenZon();
+// Herstel scan vanuit localStorage (voor pagina-herlaad)
+herstelScan();
+// Navigeer naar ankerlink als aanwezig in URL
+laadVanHash();
 
 /* ══ HAMBURGER MENU ══ */
 function toggleMobielMenu(){
