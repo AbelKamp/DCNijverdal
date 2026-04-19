@@ -1,0 +1,16 @@
+# Besturingssysteem
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+*.swp
+*.swo
+
+# Tijdelijke bestanden
+*.tmp
+*.log
+
+# Node (voor het geval dat)
+node_modules/
